@@ -12,8 +12,8 @@ type validate struct {
 	splitStr string
 }
 
-func validatestruct(c *Context) bool {
-	value := reflect.ValueOf(c)
+func validatestruct(requestdata *RequestData) bool {
+	value := reflect.ValueOf(requestdata)
 	tye := value.Type()
 	for i := 0; i < value.NumField(); i++ {
 		tag := tye.Field(i).Tag.Get("validate")

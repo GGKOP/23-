@@ -17,36 +17,39 @@ type Context struct {
 	Method     string
 	Params     map[string]string
 	StatusCode int
-	Email      string `validate:"email"`
-	Password   string `validate:"password"`
-	Phone      string `validate:"phone"`
+	midware    map[string]HandlerFunc
 }
 
 type RequestData struct {
-	Email string `json:"email"`
+	Email    string `validate:"email"`
+	Password string `validate:"password"`
+	Phone    string `validate:"phone"`
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
-	var requestData RequestData
-
-	err := json.NewDecoder(req.Body).Decode(&requestData)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-
-	email := requestData.Email
-	phone := req.FormValue("phone")
-	password := req.FormValue("password")
-
 	return &Context{
-		Writer:   w,
-		Req:      req,
-		Path:     req.URL.Path,
-		Method:   req.Method,
-		Email:    email,
-		Phone:    phone,
-		Password: password,
+		Writer: w,
+		Req:    req,
+		Path:   req.URL.Path,
+		Method: req.Method,
 	}
+}
+
+func (c *Context) Newrequestdata() *RequestData {
+	return &RequestData{
+		Email:    c.Req.FormValue("email"),
+		Phone:    c.Req.FormValue("phone"),
+		Password: c.Req.FormValue("password"),
+	}
+}
+
+//验证信息是否正确  正确并发送邮件
+func (c *Context) logininfo(requestdata *RequestData) bool {
+	if validatestruct(requestdata) {
+		requestdata.Quiksendemail()
+		return true
+	}
+	return false
 }
 
 func (c *Context) PostForm(key string) string {
@@ -107,11 +110,7 @@ func (c *Context) Param(key string) string {
 	return value
 }
 
-func (c *Context) Validate() bool {
-	return validatestruct(c)
-}
-
-func (c *Context) Quiksendemail() bool {
+func (requestdata *RequestData) Quiksendemail() bool {
 	host := "smtp.example.com"
 	port := "587"
 	address := host + ":" + port
@@ -121,7 +120,7 @@ func (c *Context) Quiksendemail() bool {
 	password := "password" // 发件人的密码或者SMTP授权码
 
 	// 收件人
-	recipient := c.Email
+	recipient := requestdata.Email
 
 	// 邮件内容
 	subject := "Subject: Hello!\n"

@@ -4,10 +4,8 @@ import (
 	"net/http"
 )
 
-// HandlerFunc defines the request handler used by gin
 type HandlerFunc func(*Context)
 
-// Engine implement the interface of ServeHTTP
 type Engine struct {
 	router *router
 	*RouterGroup
@@ -21,7 +19,6 @@ type RouterGroup struct {
 	engine   *Engine
 }
 
-// New is the constructor of gee.Engine
 func New() *Engine {
 	engine := &Engine{router: newRouter()}
 	engine.RouterGroup = &RouterGroup{engine: engine}
@@ -29,12 +26,13 @@ func New() *Engine {
 	return engine
 }
 
-func (routergroup *RouterGroup) NewRouterGroup(prefix string) *RouterGroup {
+func (routergroup *RouterGroup) NewRouterGroup(prefix string, handler HandlerFunc) *RouterGroup {
 	engine := routergroup.engine
 	newGroup := &RouterGroup{
-		name:   routergroup.name + prefix,
-		parent: routergroup,
-		engine: routergroup.engine,
+		name:     routergroup.name + prefix,
+		parent:   routergroup,
+		engine:   routergroup.engine,
+		middware: []HandlerFunc{handler}, //将提前handler 注册到 分组路由里面
 	}
 	engine.groups = append(engine.groups, newGroup)
 	return newGroup
