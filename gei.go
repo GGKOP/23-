@@ -2,6 +2,7 @@ package gei
 
 import (
 	"net/http"
+	"strings"
 )
 
 type HandlerFunc func(*Context)
@@ -26,16 +27,19 @@ func New() *Engine {
 	return engine
 }
 
-func (routergroup *RouterGroup) NewRouterGroup(prefix string, handler HandlerFunc) *RouterGroup {
+func (routergroup *RouterGroup) NewRouterGroup(prefix string) *RouterGroup {
 	engine := routergroup.engine
 	newGroup := &RouterGroup{
-		name:     routergroup.name + prefix,
-		parent:   routergroup,
-		engine:   routergroup.engine,
-		middware: []HandlerFunc{handler}, //将提前handler 注册到 分组路由里面
+		name:   routergroup.name + prefix,
+		parent: routergroup,
+		engine: routergroup.engine,
 	}
 	engine.groups = append(engine.groups, newGroup)
 	return newGroup
+}
+
+func (routergroup *RouterGroup) RunMiddware(midware ...HandlerFunc) {
+	routergroup.middware = append(routergroup.middware, midware...)
 }
 
 func (routergroup *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
@@ -68,6 +72,13 @@ func (engine *Engine) Run(addr string) (err error) {
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var middwares []HandlerFunc
+	for _, routergroup := range engine.groups {
+		if strings.HasPrefix(req.URL.Path, routergroup.name) {
+			middwares = append(middwares, routergroup.middware...)
+		}
+	}
 	c := newContext(w, req)
+	c.handlers = middwares
 	engine.router.handle(c)
 }

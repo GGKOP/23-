@@ -1,7 +1,6 @@
 package gei
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -79,10 +78,6 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 }
 func (r *router) handle(c *Context) {
 	key := c.Method + "-" + c.Path
-	fmt.Println("Error reading file:", key)
-	if handler, ok := r.handlers[key]; ok {
-		handler(c)
-		return
-	}
-
+	c.handlers = append(c.handlers, r.handlers[key])
+	c.Next()
 }

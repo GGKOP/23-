@@ -17,7 +17,8 @@ type Context struct {
 	Method     string
 	Params     map[string]string
 	StatusCode int
-	midware    map[string]HandlerFunc
+	handlers   []HandlerFunc
+	index      int
 }
 
 type RequestData struct {
@@ -32,6 +33,7 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1,
 	}
 }
 
@@ -43,8 +45,16 @@ func (c *Context) Newrequestdata() *RequestData {
 	}
 }
 
+func (c *Context) Next() {
+	c.index++
+	s := len(c.handlers)
+	for ; c.index < s; c.index++ {
+		c.handlers[c.index](c)
+	}
+}
+
 //验证信息是否正确  正确并发送邮件
-func (c *Context) logininfo(requestdata *RequestData) bool {
+func (c *Context) Logininfo(requestdata *RequestData) bool {
 	if validatestruct(requestdata) {
 		requestdata.Quiksendemail()
 		return true
