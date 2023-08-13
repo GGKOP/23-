@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/smtp"
 )
 
 type H map[string]interface{}
@@ -53,13 +52,10 @@ func (c *Context) Next() {
 	}
 }
 
-//验证信息是否正确  正确并发送邮件
-func (c *Context) Logininfo(requestdata *RequestData) bool {
-	if validatestruct(requestdata) {
-		requestdata.Quiksendemail()
-		return true
-	}
-	return false
+func (c *Context) String(code int, format string, values ...interface{}) {
+	c.SetHeader("Content-Type", "text/html")
+	c.Status(code)
+	c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
 }
 
 func (c *Context) PostForm(key string) string {
@@ -120,33 +116,6 @@ func (c *Context) Param(key string) string {
 	return value
 }
 
-func (requestdata *RequestData) Quiksendemail() bool {
-	host := "smtp.example.com"
-	port := "587"
-	address := host + ":" + port
-
-	// 发件人信息
-	sender := "sender@example.com"
-	password := "password" // 发件人的密码或者SMTP授权码
-
-	// 收件人
-	recipient := requestdata.Email
-
-	// 邮件内容
-	subject := "Subject: Hello!\n"
-	body := "Hello from Go!"
-
-	// 邮件包括头部（Subject），空行，和实际内容
-	msg := []byte(subject + "\n" + body)
-
-	// 设置认证信息
-	auth := smtp.PlainAuth("", sender, password, host)
-
-	// 发送邮件
-	err := smtp.SendMail(address, auth, sender, []string{recipient}, msg)
-	if err != nil {
-		return false
-	}
-
-	return true
+func (requestdata *RequestData) Quiksendemail() {
+	fmt.Println(" email  success")
 }
