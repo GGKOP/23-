@@ -13,7 +13,7 @@ type validate struct {
 	splitStr string
 }
 
-func validatestruct(requestdata *RequestData) bool {
+func validatestruct(requestdata interface{}) bool {
 	value := reflect.ValueOf(requestdata)
 	if value.Kind() == reflect.Ptr {
 		value = value.Elem() // 获取指针指向的实际值
@@ -31,12 +31,9 @@ func validatestruct(requestdata *RequestData) bool {
 			tagV = tag[equalIndex+1:]
 		}
 		field := value.Field(i)
-		log.Printf("%s:%s", tag, requestdata.Email)
-		log.Printf("%s:%s", tag, requestdata.Password)
-		log.Printf("%s:%s", tag, requestdata.Phone)
 		switch field.Kind() {
 		case reflect.String:
-			if tag == "requiered" {
+			if tag == "required" {
 				if len(field.Interface().(string)) < 1 {
 					log.Printf("requiered error")
 					return false
