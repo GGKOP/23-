@@ -1,6 +1,7 @@
 package gei
 
 import (
+	"net/http"
 	"strings"
 )
 
@@ -9,7 +10,8 @@ type router struct {
 	handlers map[string]HandlerFunc
 }
 
-// roots key eg, roots['GET'] roots['POST']
+type R map[string]interface{}
+
 // handlers key eg, handlers['GET-/p/:lang/doc'], handlers['POST-/p/book']  目标是搞成这个样子。
 
 // 构造一个新的router
@@ -77,7 +79,16 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 	return nil, nil
 }
 func (r *router) handle(c *Context) {
-	key := c.Method + "-" + c.Path
-	c.handlers = append(c.handlers, r.handlers[key])
-	c.Next()
+	n, params := r.getRoute(c.Method, c.Path)
+	if n != nil {
+		c.Params = params
+		key := c.Method + "-" + c.Path
+		c.handlers = append(c.handlers, r.handlers[key])
+		c.Next()
+	} else {
+		c.JSON(http.StatusOK, R{
+			"message": "404 NOT Found",
+		})
+	}
+
 }

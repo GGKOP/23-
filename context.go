@@ -8,7 +8,6 @@ import (
 )
 
 type H map[string]interface{}
-
 type Context struct {
 	Writer     http.ResponseWriter
 	Req        *http.Request
@@ -20,12 +19,6 @@ type Context struct {
 	index      int
 }
 
-type RequestData struct {
-	Email    string `validate:"email"`
-	Password string `validate:"password"`
-	Phone    string `validate:"phone"`
-}
-
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		Writer: w,
@@ -33,14 +26,6 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Path:   req.URL.Path,
 		Method: req.Method,
 		index:  -1,
-	}
-}
-
-func (c *Context) Newrequestdata() *RequestData {
-	return &RequestData{
-		Email:    c.Req.FormValue("email"),
-		Phone:    c.Req.FormValue("phone"),
-		Password: c.Req.FormValue("password"),
 	}
 }
 
@@ -114,8 +99,4 @@ func (c *Context) ServeHTMLFile(filename string) {
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
-}
-
-func (requestdata *RequestData) Quiksendemail() {
-	fmt.Println(" email  success")
 }
