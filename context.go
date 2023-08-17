@@ -8,6 +8,12 @@ import (
 )
 
 type H map[string]interface{}
+
+const (
+	cookiename = "user-cookie"
+	secretkey  = " your-secret-key"
+)
+
 type Context struct {
 	Writer     http.ResponseWriter
 	Req        *http.Request

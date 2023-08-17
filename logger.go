@@ -3,9 +3,12 @@ package gei
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 	//"gopkg.in/gomail.v2"
 )
+
+type L map[string]interface{}
 
 func Quiksendemail() HandlerFunc {
 	return func(c *Context) {
@@ -62,19 +65,32 @@ func Signup() HandlerFunc {
 
 func Login() HandlerFunc {
 	return func(c *Context) {
+		cookie := http.Cookie{
+			Name:  cookiename,
+			Value: "user-authenticated",
+		}
+		log.Printf("login  success")
 
-		type loginfo struct {
-			Username string `validate:"username"`
-			Password string `validate:"password"`
-		}
-		newloginfo := &loginfo{
-			Username: c.Req.FormValue("username"),
-			Password: c.Req.FormValue("password"),
-		}
+		http.SetCookie(c.Writer, &cookie)
+		c.JSON(http.StatusOK, L{
+			"message": " loggin in and cookie successfully",
+		})
+		c.Next()
+	}
+}
 
-		if validatestruct(newloginfo) {
-			log.Printf("log in success")
+func AuthenticateMiddleware() HandlerFunc {
+	return func(c *Context) {
+		cookie, err := c.Req.Cookie(cookiename)
+		if err != nil || cookie.Value != "user-authenticated" {
+			c.JSON(http.StatusUnauthorized, L{
+				"error": "Unauthorized",
+			})
+			return
 		}
+		c.JSON(http.StatusOK, L{
+			"message": " info successfully",
+		})
 		c.Next()
 	}
 }
