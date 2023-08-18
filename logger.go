@@ -111,9 +111,6 @@ func Login() HandlerFunc {
 
 func AuthenticateMiddleware() HandlerFunc {
 	return func(c *Context) {
-		c.JSON(http.StatusOK, L{
-			"error": " is not authenticated",
-		})
 		cookie, err := c.Req.Cookie(cookiename)
 		if err != nil || !strings.HasSuffix(cookie.Value, "-authenticated") {
 			c.JSON(http.StatusUnauthorized, L{
@@ -142,41 +139,4 @@ func AuthenticateMiddleware() HandlerFunc {
 		})
 		c.Next()
 	}
-}
-
-func Test() HandlerFunc {
-	return func(c *Context) {
-		c.JSON(http.StatusOK, L{
-			"test": " 1",
-		})
-		cookie, err := c.Req.Cookie(cookiename)
-		if err != nil || !strings.HasSuffix(cookie.Value, "-authenticated") {
-			c.JSON(http.StatusUnauthorized, L{
-				"error": "Unauthorized",
-			})
-			return
-		}
-		c.JSON(http.StatusOK, L{
-			"test": " 2",
-		})
-		db, err := sql.Open("mysql", "root:990726@tcp(localhost:3306)/geidb")
-		if err != nil {
-			fmt.Println("Failed to connect to the database:", err)
-			return
-		}
-		username := strings.TrimSuffix(cookie.Value, "-authenticated")
-		var dbUsername, dbPassword string
-		err = db.QueryRow("SELECT username, password FROM users WHERE username = ?", username).Scan(&dbUsername, &dbPassword)
-		if err != nil {
-			c.JSON(http.StatusOK, L{
-				"error": " is not authenticated",
-			})
-			return
-		}
-		c.JSON(http.StatusOK, L{
-			"test": " 3",
-		})
-		c.Next()
-	}
-
 }
