@@ -93,8 +93,8 @@ func (c *Context) ServeHTMLFile(filename string) {
 	fmt.Println("Trying to serve:", filename) // 添加日志
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Println("Error reading file:", err)  // 添加日志
-		c.Status(http.StatusInternalServerError) // 或其他适当的错误代码
+		fmt.Println("Error reading file:", err)
+		c.Status(http.StatusInternalServerError)
 		c.Writer.Write([]byte("Internal Server Error"))
 		return
 	}
